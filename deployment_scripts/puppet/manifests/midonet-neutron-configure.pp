@@ -84,7 +84,7 @@ file {'/etc/default/neutron-server':
 } ->
 class {'::neutron::plugins::midonet':
   midonet_api_ip    => $service_endpoint,
-  midonet_api_port  => '8081',
+  midonet_api_port  => '8181',
   keystone_username => $username,
   keystone_password => $password,
   keystone_tenant   => $tenant_name

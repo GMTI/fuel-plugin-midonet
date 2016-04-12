@@ -125,7 +125,7 @@
   reexecute_on:
   - deploy_changes
   parameters:
-    puppet_manifest: puppet/manifests/midonet-install-api.pp
+    puppet_manifest: puppet/manifests/midonet-install-cluster.pp
     puppet_modules: "puppet/modules/:/etc/puppet/modules/"
     timeout: 1440
 
@@ -143,7 +143,7 @@
   - deploy_api_midonet
   type: puppet
   parameters:
-    puppet_manifest: puppet/manifests/midonet-install-agent.pp
+    puppet_manifest: puppet/manifests/midonet-install-midolman.pp
     puppet_modules: "puppet/modules/:/etc/puppet/modules/"
     timeout: 1440
 
@@ -222,6 +222,10 @@
   type: skipped
 - id: openstack-network-compute-nova
   type: skipped
+- id: openstack-network-agents-metadata
+  type: skipped
+- id: openstack-network-agents-dhcp
+  type: skipped
 - id: netconfig
   type: skipped
 
@@ -243,7 +247,7 @@
   reexecute_on:
   - deploy_changes
   parameters:
-    puppet_manifest: puppet/manifests/midonet-install-agent.pp
+    puppet_manifest: puppet/manifests/midonet-install-midolman.pp
     puppet_modules: "puppet/modules/:/etc/puppet/modules/"
     timeout: 1440
 

@@ -69,13 +69,13 @@ if $mem {
 
 } else {
 
-  # OSS 2015.06
+  # OSS v5.x
   apt::source {'midonet_oss':
     comment     => 'midonet repository',
-    location    => 'http://repo.midonet.org/midonet/v2015.06',
+    location    => 'http://builds.midonet.org/midonet-5',
     release     => 'stable',
-    key         => '50F18FCF',
-    key_source  => 'http://repo.midonet.org/packages.midokura.key',
+    key         => '99143E75',
+    key_source  => 'https://builds.midonet.org/midorepo.key',
     include_src => false
   }
 }

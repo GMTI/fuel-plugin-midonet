@@ -66,7 +66,7 @@ file {"/etc/init/midonet-network.conf":
 
 midonet_gateway { $::fqdn:
   ensure          => present,
-  midonet_api_url => "http://${management_address}:8081/midonet-api",
+  midonet_api_url => "http://${management_address}:8181/midonet-api",
   username        => $username,
   password        => $password,
   tenant_name     => $tenant_name,
