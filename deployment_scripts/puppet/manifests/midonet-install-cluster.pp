@@ -28,7 +28,7 @@ $public_ssl_hash      = hiera('public_ssl')
 $shared_secret        = hiera('neutron_metadata_proxy_secret')
 
 class {'::midonet::cluster':
-  zk_servers           => $zoo_ips_hash,
+  zk_server_list       => values($nsdb_mgmt_ips),
   management_vip       => $management_vip,
   shared_secret        => $shared_secret,
   keystone_admin_token => $keystone_data['admin_token']

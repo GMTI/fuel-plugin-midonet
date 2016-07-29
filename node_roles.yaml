@@ -1,5 +1,5 @@
 nsdb:
-  name: Network State Database for MidoNet
+  name: Midonet Network State Database
   description: MidoNet Synchronization Services
   has_primary: false
   public_ip_required: false

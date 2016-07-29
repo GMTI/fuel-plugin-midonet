@@ -61,7 +61,7 @@ exec {"set up external bridge":
 
 file {"/etc/init/midonet-network.conf":
   ensure => present,
-  source => "/etc/fuel/plugins/midonet-fuel-plugin-4.0/puppet/files/startup.conf"
+  source => "/etc/fuel/plugins/midonet-fuel-plugin-5.0/puppet/files/startup.conf"
 } ->
 
 midonet_gateway { $::fqdn:
@@ -74,5 +74,6 @@ midonet_gateway { $::fqdn:
   local_as        => $midonet_settings['local_as'],
   bgp_port        => { 'port_address' => $midonet_settings['bgp_ip'], 'net_prefix' => $bgp_subnet_ip, 'net_length' => $bgp_subnet_cidr },
   remote_peers    => $remote_peers,
-  advertise_net   => [{ 'net_prefix' => $f_net_cidr[0], 'net_length' => $f_net_cidr[1]}]
+  advertise_net   => [{ 'net_prefix' => $f_net_cidr[0], 'net_length' => $f_net_cidr[1]}],
+  router          => 'mido_router'  
 }

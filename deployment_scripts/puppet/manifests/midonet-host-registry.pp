@@ -22,7 +22,8 @@ $tenant_name = $access_data['tenant']
 
 # Plugin settings data
 $midonet_settings = hiera_hash('midonet-fuel-plugin')
-$tz_type = $midonet_settings['tunnel_type']
+#$tz_type = $midonet_settings['tunnel_type']
+$tz_type = "vxlan"
 
 $service_path = $operatingsystem ? {
   'CentOS' => '/sbin',

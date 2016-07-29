@@ -77,5 +77,26 @@ if $mem {
     key         => '99143E75',
     key_source  => 'https://builds.midonet.org/midorepo.key',
     include_src => false
-  }
+  } 
+
+  apt::source {'midonet_3rd_party':
+     comment     => 'midonet 3rd party repository',
+     location    => 'http://builds.midonet.org/misc',
+     release     => 'stable',
+     key         => '99143E75',
+     key_source  => 'https://builds.midonet.org/midorepo.key',
+     include_src => false
+  } 
 }
+
+package {'git':
+  ensure => present,
+} ->
+
+exec {'custom-puppet-modules':
+    command => "bash install_custom_midonet_puppet_modules.sh",
+    path    => '/usr/bin:/bin',
+    require => Package['git'],
+}
+
+

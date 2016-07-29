@@ -224,7 +224,11 @@
   type: skipped
 - id: openstack-network-agents-metadata
   type: skipped
+- id: primary-openstack-network-agents-metadata
+  type: skipped
 - id: openstack-network-agents-dhcp
+  type: skipped
+- id: primary-openstack-network-agents-dhcp
   type: skipped
 - id: netconfig
   type: skipped
@@ -280,18 +284,5 @@
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/midonet-ensure-rootwrap.pp
-    puppet_modules: "puppet/modules/:/etc/puppet/modules/"
-    timeout: 720
-
-- id: gateway-midonet
-  role:
-  - midonet-gw
-  requires:
-  - tunnel-zones-midonet
-  required_for:
-  - post_deployment_end
-  type: puppet
-  parameters:
-    puppet_manifest: puppet/manifests/midonet-gateway-bgp.pp
     puppet_modules: "puppet/modules/:/etc/puppet/modules/"
     timeout: 720

@@ -1,6 +1,6 @@
 name: midonet-fuel-plugin
 title: Neutron Midonet plugin
-version: 4.0.0
+version: 5.0.0
 description: Enable to use plugin Midonet for Neutron
 fuel_version: ['8.0']
 is_hotpluggable: false
@@ -18,5 +18,5 @@ authors: ['Lucas Eznarriaga <lucas@midokura.com>, Midokura',
           'Jaume Devesa <jaume@midokura.com>, Midokura',
           'Carmela Rubinos <carmela@midokura.com>, Midokura',
           'Samir Ibradzic <samir@midokura.com>, Midokura']
-homepage: 'https://github.com/openstack/fuel-plugin-midonet'
+homepage: 'https://github.com/GMTI/fuel-plugin-midonet/tree/midonet-5.x'
 groups: ['network']

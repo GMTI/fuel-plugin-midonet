@@ -27,20 +27,16 @@ $username         = $access_data['user']
 $password         = $access_data['password']
 $tenant_name      = $access_data['tenant']
 $node_roles       = $network_metadata['nodes'][$::hostname]['node_roles']
-$resource_type    = ''
-$resource_flavor  = ''
 
-if ($node_roles in [ 'compute' ]) {
+if ( 'compute' in $node_roles) {
   $resource_type    = 'compute'
   $resource_flavor  = 'large'
-} elsif ($node_roles in [ 'midonet-gw' ]) {
+} elsif ( 'midonet-gw' in $node_roles) {
   $resource_type    = 'gateway'
   $resource_flavor  = 'medium'
-}
-
-$ovsdb_service_name = $operatingsystem ? {
-  'CentOS' => 'openvswitch',
-  'Ubuntu' => 'openvswitch-switch'
+} else {
+  $resource_type    = ''
+  $resource_flavor  = ''
 }
 
 $openvswitch_package_neutron = $operatingsystem ? {
@@ -53,11 +49,6 @@ $openvswitch_package = $operatingsystem ? {
   'Ubuntu' => 'openvswitch-switch'
 }
 
-service {$ovsdb_service_name:
-  ensure => stopped,
-  enable => false
-} ->
-
 package {$openvswitch_package_neutron:
   ensure => purged
 } ->
@@ -67,7 +58,7 @@ package {$openvswitch_package:
 } ->
 
 class {'::midonet::midolman':
-  zk_servers      => $zoo_ips_hash,
+  zk_server_list  => values($nsdb_mgmt_ips),
   resource_type   => $resource_type,
   resource_flavor => $resource_flavor
 } ->
@@ -95,5 +86,5 @@ if $segmentation_type =='tun' {
 exec {'/usr/bin/mm-dpctl --delete-dp ovs-system':
   path    => "/usr/bin:/usr/sbin:/bin",
   onlyif  => '/usr/bin/mm-dpctl --show-dp ovs-system',
-  require => Class['::midonet::midonet_agent']
+  require => Class['::midonet::midolman']
 }
