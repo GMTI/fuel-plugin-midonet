@@ -17,7 +17,8 @@ notice('MODULAR: midonet-neutron-networks.pp')
 $access_data           = hiera_hash('access')
 $keystone_admin_tenant = $access_data['tenant']
 $network_metadata      = hiera_hash('network_metadata')
-$node_roles            = $network_metadata['nodes'][$::hostname]['node_roles']
+$uid                   = get_node_key_name()
+$node_roles            = $network_metadata['nodes'][$uid]['node_roles']
 $neutron_settings      = hiera('neutron_config')
 $external_net_name     = $neutron_settings['default_floating_net']
 $tenant_net_name       = $neutron_settings['default_private_net']

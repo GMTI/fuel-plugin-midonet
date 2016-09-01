@@ -18,43 +18,48 @@
   - logging
   - hiera
   - globals
-  - netconfig-midonet
+  - netconfig
 
 - id: midonet-gw
   parameters:
     strategy:
-      type: parallel
-  required_for:
-  - deploy_end
-  requires:
-  - nsdb
-  role:
-  - midonet-gw
+      type: one_by_one 
+  requires: [post_deployment_start]
+  required_for: [post_deployment_end]  
+  role: [midonet-gw]
   tasks:
-  - logging
   - hiera
+  - setup_repositories
+  - fuel_pkgs
   - globals
-  - netconfig-midonet
+  - tools
+  - logging
+  - netconfig
+  - setup_repositories_midonet
+  - enable_ip_forward_midonet
+  - agent-midonet-controller
+  - tunnel-zones-midonet
+  - rootwrap-midonet
   type: group
 
 #
 # DEPLOYMENT
 #
 
-- id: netconfig-midonet
-  parameters:
-    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/netconfig/netconfig.pp
-    puppet_modules: /etc/puppet/modules
-    timeout: 3600
-    cwd: /
-  required_for:
-  - netconfig
-  requires:
-  - tools
-  groups:
-  - /.*/
-  type: puppet
-  version: 2.0.0
+#- id: netconfig-midonet
+#  parameters:
+#    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/netconfig/netconfig.pp
+#    puppet_modules: /etc/puppet/modules
+#    timeout: 3600
+#    cwd: /
+#  required_for:
+#  - netconfig
+#  requires:
+#  - tools
+#  groups:
+#  - /.*/
+#  type: puppet
+#  version: 2.0.0
 
 # First independent tasks
 - id: setup_repositories_midonet
@@ -63,7 +68,6 @@
   - controller
   - compute
   - nsdb
-  - midonet-gw
   required_for:
   - deploy_end
   requires:
@@ -79,11 +83,11 @@
   - compute
   - controller
   - primary-controller
-  - midonet-gw
   required_for:
   - deploy_end
   requires:
-  - deploy_start
+  - setup_repositories_midonet
+  - firewall
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/midonet-enable-ip-forward.pp
@@ -116,6 +120,7 @@
   - deploy_end
   - openstack-network-start
   requires:
+  - zookeeper_and_cassandra_midonet
   - setup_repositories_midonet
   - enable_ip_forward_midonet
   - firewall
@@ -140,7 +145,12 @@
   - deploy_end
   - openstack-network-start
   requires:
-  - deploy_api_midonet
+  - netconfig
+  cross-depends:
+    - name: deploy_api_midonet
+      role: [primary-controller, controller]
+  reexcute_on:
+  - netconfig
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/midonet-install-midolman.pp
@@ -169,7 +179,7 @@
   requires:
   - openstack-network-midonet-replace-service-name
   required_for:
-  - openstack-network-server-config
+  - openstack-network-midonet-networks
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/midonet-neutron-configure.pp
@@ -180,7 +190,7 @@
   groups:
   - primary-controller
   requires:
-  - openstack-network-server-config
+  - openstack-network-midonet-config
   required_for:
   - openstack-network-end
   type: puppet
@@ -197,9 +207,10 @@
   required_for:
   - openstack-network-end
   requires:
-  - openstack-network-common-config
-  - openstack-network-agents-l3
-  - openstack-network-agents-metadata
+  - openstack-network-start
+  cross-depends:
+    - name: openstack-network-common-config
+      role: [primary-controller, controller]
   type: puppet
   groups:
   - compute
@@ -222,6 +233,8 @@
   type: skipped
 - id: openstack-network-compute-nova
   type: skipped
+- id: enable_nova_compute_service
+  type: skipped
 - id: openstack-network-agents-metadata
   type: skipped
 - id: primary-openstack-network-agents-metadata
@@ -230,8 +243,10 @@
   type: skipped
 - id: primary-openstack-network-agents-dhcp
   type: skipped
-- id: netconfig
+- id: openstack-network-agents-sriov
   type: skipped
+#- id: netconfig
+#  type: skipped
 
 # POST-DEPLOYMENT TASKS
 
@@ -242,11 +257,12 @@
 - id: agent-midonet-compute
   role:
   - compute
-  - midonet-gw
   required_for:
   - post_deployment_end
-  requires:
-  - configure_default_route
+  requires: [configure_default_route]
+  cross-depends:
+    - name: deploy_api_midonet
+      role: [primary-controller, controller]
   type: puppet
   reexecute_on:
   - deploy_changes
@@ -255,16 +271,27 @@
     puppet_modules: "puppet/modules/:/etc/puppet/modules/"
     timeout: 1440
 
-- id: tunnel-zones-midonet
+- id: tunnel-zones-midonet-compute
   role:
   - compute
-  - controller
-  - primary-controller
-  - midonet-gw
   required_for:
   - post_deployment_end
   requires:
   - agent-midonet-compute
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/midonet-host-registry.pp
+    puppet_modules: "puppet/modules/:/etc/puppet/modules/"
+    timeout: 720
+
+- id: tunnel-zones-midonet
+  role:
+  - controller
+  - primary-controller
+  required_for:
+  - post_deployment_end
+  requires:
+  - post_deployment_start 
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/midonet-host-registry.pp
@@ -276,11 +303,13 @@
   - compute
   - controller
   - primary-controller
-  - midonet-gw
   required_for:
   - post_deployment_end
   requires:
-  - agent-midonet-compute
+  - post_deployment_start
+  cross-depends:
+    - name: agent-midonet-compute
+      role: [compute]
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/midonet-ensure-rootwrap.pp

@@ -30,7 +30,7 @@ $admin_password             = try_get_value($neutron_config, 'keystone/admin_pas
 $admin_tenant_name          = try_get_value($neutron_config, 'keystone/admin_tenant', 'services')
 $admin_username             = try_get_value($neutron_config, 'keystone/admin_user', 'neutron')
 $region_name                = hiera('region', 'RegionOne')
-$auth_api_version           = 'v2.0'
+$auth_api_version           = 'v3'
 $ssl_hash                   = hiera_hash('use_ssl', {})
 
 $admin_identity_protocol    = get_ssl_property($ssl_hash, {}, 'keystone', 'admin', 'protocol', 'http')
@@ -122,8 +122,65 @@ service { 'nova-compute':
 }
 Nova_config<| |> ~> Service['nova-compute']
 
-if($::operatingsystem == 'Ubuntu') {
+if $::osfamily == 'Debian' {
   tweaks::ubuntu_service_override { 'nova-network':
-    package_name => 'nova-network',
+      package_name => "nova-network",
+    }
+  package { 'nova-network':
+    ensure => installed,
+  }
+  service { 'nova-network':
+    enable => false,
   }
 }
+
+    file_line { 'enable_qemu_user':
+      path   => '/etc/libvirt/qemu.conf',
+      line   => 'user = "root"',
+    }
+    file_line { 'enable_qemu_group':
+      path   => '/etc/libvirt/qemu.conf',
+      line   => 'group = "root"',
+      after  => '^user.*$',
+    }
+    file_line { 'cgroup_device_acl':
+      path   => '/etc/libvirt/qemu.conf',
+      line   => 'cgroup_device_acl = [',
+      before => File_line['cgroup_devices_first'],
+    }
+    file_line { 'cgroup_devices_first':
+      path   => '/etc/libvirt/qemu.conf',
+      line   => '    "/dev/null", "/dev/full", "/dev/zero",',
+      after  => '^cgroup_device_acl.*$',
+      before => File_line['cgroup_devices_second'],
+    }
+    file_line { 'cgroup_devices_second':
+      path   => '/etc/libvirt/qemu.conf',
+      after  => '^    "/dev/null", "/dev/full", "/dev/zero",',
+      line   => '    "/dev/random", "/dev/urandom",',
+      before => File_line['cgroup_devices_third'],
+    }
+    file_line { 'cgroup_devices_third':
+      path   => '/etc/libvirt/qemu.conf',
+      after  => '^    "/dev/random", "/dev/urandom",',
+      line   => '    "/dev/ptmx", "/dev/kvm", "/dev/kqemu",',
+      before => File_line['cgroup_devices_fourth'],
+    }
+    file_line { 'cgroup_devices_fourth':
+      path   => '/etc/libvirt/qemu.conf',
+      after  => '^    "/dev/ptmx", "/dev/kvm", "/dev/kqemu",',
+      line   => '    "/dev/rtc","/dev/hpet", "/dev/vfio/vfio",',
+      before => File_line['cgroup_devices_fifth'],
+    }
+    file_line { 'cgroup_devices_fifth':
+      path   => '/etc/libvirt/qemu.conf',
+      after  => '^    "/dev/rtc".*$',
+      line   => '    "/dev/net/tun"',
+      before => File_line['cgroup_devices_last'],
+    }
+    file_line { 'cgroup_devices_last':
+      path   => '/etc/libvirt/qemu.conf',
+      after  => '^    "/dev/net/tun"',
+      line   => ']',
+      notify  => Service['libvirt'],
+    }

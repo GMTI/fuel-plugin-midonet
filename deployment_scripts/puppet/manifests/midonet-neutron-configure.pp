@@ -15,7 +15,7 @@ notice('MODULAR: midonet-configure-neutron.pp')
 
 # Neutron data
 $amqp_port             = '5673'
-$rabbit_hash           = hiera('rabbit_hash', {})
+$rabbit_hash           = hiera('rabbit', {})
 $management_vip          = hiera('management_vip')
 $service_endpoint      = hiera('service_endpoint', $management_vip)
 $neutron_config        = hiera('quantum_settings')
@@ -93,13 +93,14 @@ class {'::neutron::plugins::midonet':
 
 class { '::neutron::server':
   sync_db       => $primary_controller ? {true => 'primary', default => 'slave'},
-  auth_host     => $service_endpoint,
-  auth_port     => '35357',
-  auth_protocol => 'http',
+  #auth_host     => $service_endpoint,
+  #auth_port     => '35357',
+  #auth_protocol => 'http',
   auth_password => $neutron_user_password,
   auth_tenant   => 'services',
   auth_user     => 'neutron',
   auth_uri      => "http://${service_endpoint}:35357/v2.0",
+  identity_uri  => "http://${service_endpoint}:35357/",
 
   database_retry_interval => 2,
   database_connection     => "mysql://neutron:${neutron_db_password}@${service_endpoint}/neutron?&read_timeout=60",

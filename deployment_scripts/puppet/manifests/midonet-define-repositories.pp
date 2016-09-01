@@ -22,7 +22,6 @@ $oss_version = 'v2015.06'
 
 $key_content = "-----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1
-
 mI0ETb6aOgEEAMVw8Vnwk+zpDtsc0gSW10JEe48zKr2vpl9tQgWAFOPgOA1NglYM
 w/xT6Rns7CrYxPR0cb3DeMFtFdMkfWXO0R6x4yHrozMDY/DpvwgYQclIIbcYYe0p
 83nlBp793D2dSq60HWuXJu3oi0wQQuR0/jTmOnjxzCzu5jKdJeXihl95ABEBAAG0
@@ -44,10 +43,10 @@ zg==
 include apt
 include apt::update
 
-# MidoNet Neutron plugin Liberty key
-apt::source {'midonet_neutron_liberty':
+# MidoNet Neutron plugin Mitaka key
+apt::source {'midonet_neutron_mitaka':
   comment     => 'midonet plugin repository',
-  location    => 'http://builds.midonet.org/openstack-liberty',
+  location    => 'http://builds.midonet.org/openstack-mitaka',
   release     => 'stable',
   key         => '99143E75',
   key_source  => 'https://builds.midonet.org/midorepo.key',
@@ -72,7 +71,7 @@ if $mem {
   # OSS v5.x
   apt::source {'midonet_oss':
     comment     => 'midonet repository',
-    location    => 'http://builds.midonet.org/midonet-5',
+    location    => 'http://builds.midonet.org/midonet-5.2',
     release     => 'stable',
     key         => '99143E75',
     key_source  => 'https://builds.midonet.org/midorepo.key',

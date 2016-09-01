@@ -26,7 +26,8 @@ $access_data      = hiera_hash('access')
 $username         = $access_data['user']
 $password         = $access_data['password']
 $tenant_name      = $access_data['tenant']
-$node_roles       = $network_metadata['nodes'][$::hostname]['node_roles']
+$uid              = get_node_key_name()
+$node_roles       = $network_metadata['nodes'][$uid]['node_roles']
 
 if ( 'compute' in $node_roles) {
   $resource_type    = 'compute'
@@ -83,8 +84,8 @@ if $segmentation_type =='tun' {
   }
 }
 
-exec {'/usr/bin/mm-dpctl --delete-dp ovs-system':
+exec {'/usr/bin/mm-dpctl datapath --delete ovs-system':
   path    => "/usr/bin:/usr/sbin:/bin",
-  onlyif  => '/usr/bin/mm-dpctl --show-dp ovs-system',
+  onlyif  => '/usr/bin/mm-dpctl datapath --show ovs-system',
   require => Class['::midonet::midolman']
 }
